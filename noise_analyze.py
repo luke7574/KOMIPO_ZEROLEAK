@@ -9,7 +9,7 @@ import soundfile as sf
 made_csv = 0
 melspectrogram = 0
 stft_spectrogram = 0
-stft_wav = 0
+stft_wav = 1
 
 def get_wav_clean1sec(signal,sr):
     SEC_0_1 = sr // 10  # 0.1초 샘플 개수
@@ -24,38 +24,35 @@ def get_wav_clean1sec(signal,sr):
     tfa_data = signal[a * SEC_0_1: a * SEC_0_1 + SEC_1]
     return tfa_data, sr
 
-wav_path = "electric_sound/179374_20240612_15_12_44_126_L.wav"
-save_folder = "C:/Users/user/AI/KOMIPO_ZeroLeak/electric_sound/fft_data_abs.csv"
+wav_path = "test/가나다/가나다.wav"
 data, samplerate = librosa.load(wav_path, sr=None, duration=5)
-
-
-#----------------------------------------------------------------------------------------------
-# fft_data = abs(fft(data))
-# # 전체 fft_data에서 최대 진폭 주파수 계산
-# max_index = np.argmax(fft_data)
-# hz_per_bin = samplerate / len(fft_data)  # 1 bin당 주파수 간격
-# max_freq = max_index * hz_per_bin
-
-# print(f"전체 구간 max FFT 값: {fft_data[max_index]:.2f}")
-# print(f"해당 주파수(Hz): {max_freq:.2f} Hz")
-# #----------------------------------------------------------------------------------------------
-# data_1sec, sr = get_wav_clean1sec(data,samplerate)
-# fft_data_1sec = abs(fft(data_1sec))
-
-# max_index_1sec = np.argmax(fft_data_1sec)
-# hz_per_bin_1sec = samplerate / len(fft_data_1sec)
-# max_freq_1sec = max_index_1sec * hz_per_bin_1sec
-
-# print(f"1초 구간 max FFT 값: {fft_data_1sec[max_index_1sec]:.2f}")
-# print(f"해당 주파수(Hz): {max_freq_1sec:.2f} Hz")
 
 #----------------------------------------------------------------------------------------------------------
 if made_csv:
+    fft_data = abs(fft(data))
+    # 전체 fft_data에서 최대 진폭 주파수 계산
+    max_index = np.argmax(fft_data)
+    hz_per_bin = samplerate / len(fft_data)  # 1 bin당 주파수 간격
+    max_freq = max_index * hz_per_bin
+
+    print(f"전체 구간 max FFT 값: {fft_data[max_index]:.2f}")
+    print(f"해당 주파수(Hz): {max_freq:.2f} Hz")
+    #----------------------------------------------------------------------------------------------
+    data_1sec, sr = get_wav_clean1sec(data,samplerate)
+    fft_data_1sec = abs(fft(data_1sec))
+
+    max_index_1sec = np.argmax(fft_data_1sec)
+    hz_per_bin_1sec = samplerate / len(fft_data_1sec)
+    max_freq_1sec = max_index_1sec * hz_per_bin_1sec
+
+    print(f"1초 구간 max FFT 값: {fft_data_1sec[max_index_1sec]:.2f}")
+    print(f"해당 주파수(Hz): {max_freq_1sec:.2f} Hz")
+
     df = pd.DataFrame({
         'HZ' : np.arange(len(fft_data))*hz_per_bin,
         'fft' : fft_data
     })
-
+    save_folder = "C:/Users/user/AI/KOMIPO_ZeroLeak/electric_sound/fft_data_abs.csv"
     df.to_csv(save_folder, index=False)
     print(f"결과가 CSV로 저장되었습니다: {save_folder}")
 
@@ -74,7 +71,7 @@ if melspectrogram:
     plt.xlabel("Time (s)")
     plt.ylabel("Frequency (Hz)")
     plt.tight_layout()
-    plt.savefig("C:/Users/user/AI/KOMIPO_ZeroLeak/electric_sound/mel.png")
+    plt.savefig("C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/mel.png")
     plt.show()
     
 
@@ -93,7 +90,7 @@ if stft_spectrogram:
     df_stft.columns.name = "Time (s)"
 
     # CSV 저장 경로
-    stft_csv_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/electric_sound/stft_spectrogram.csv"
+    stft_csv_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/stft_spectrogram.csv"
     df_stft.to_csv(stft_csv_path)
     print(f"✅ STFT dB 데이터가 CSV로 저장되었습니다: {stft_csv_path}")
 
@@ -105,14 +102,14 @@ if stft_spectrogram:
     plt.xlabel("Time (s)")
     plt.ylabel("Frequency (Hz)")
     plt.tight_layout()
-    plt.savefig("C:/Users/user/AI/KOMIPO_ZeroLeak/electric_sound/stft.png") 
+    plt.savefig("C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/stft.png") 
     plt.show()
     
 
 if stft_wav:
-    save_wav_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/electric_sound/cleaned_filtered_output.wav"
-    low_threshold_hz = 400  # 이 이상의 주파수를 노이즈로 간주
-    high_threshold_hz = 4000
+    save_wav_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/cleaned_filtered_output.wav"
+    low_threshold_hz = 0  # 이 이상의 주파수를 노이즈로 간주
+    high_threshold_hz = 2000
     # 2. STFT 변환
     D = librosa.stft(data, n_fft=1024, hop_length=512)
     D_mag = np.abs(D)
@@ -143,7 +140,7 @@ if stft_wav:
     plt.colorbar(format='%+2.0f dB')
     plt.title("STFT (After Noise Filtering > 3kHz)")
     plt.tight_layout()
-    plt.savefig("C:/Users/user/AI/KOMIPO_ZeroLeak/electric_sound/stft_after.png")
+    plt.savefig("C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/stft_after.png")
     plt.show()
 
 
