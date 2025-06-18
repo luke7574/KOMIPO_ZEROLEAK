@@ -5,11 +5,16 @@ import librosa.display
 from scipy.fftpack import fft
 import matplotlib.pyplot as plt
 import soundfile as sf
+import os
 
 made_csv = 0
-melspectrogram = 0
-stft_spectrogram = 0
-stft_wav = 1
+melspectrogram = 1
+stft_spectrogram = 1
+fft_img = 1
+stft_wav = 0
+
+# plot_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/convtasnet_test_clean/153606_20231010_09_11_01_127_N"
+
 
 def get_wav_clean1sec(signal,sr):
     SEC_0_1 = sr // 10  # 0.1초 샘플 개수
@@ -24,8 +29,14 @@ def get_wav_clean1sec(signal,sr):
     tfa_data = signal[a * SEC_0_1: a * SEC_0_1 + SEC_1]
     return tfa_data, sr
 
-wav_path = "test/가나다/가나다.wav"
+wav_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/convtasnet_test/190228_20250611_10_27_09_126_N.wav"
 data, samplerate = librosa.load(wav_path, sr=None, duration=5)
+
+wav_filename = os.path.splitext(os.path.basename(wav_path))[0]
+base_output_dir = os.path.dirname(wav_path)
+plot_path = os.path.join(base_output_dir, wav_filename)
+os.makedirs(plot_path, exist_ok=True)
+
 
 #----------------------------------------------------------------------------------------------------------
 if made_csv:
@@ -71,8 +82,9 @@ if melspectrogram:
     plt.xlabel("Time (s)")
     plt.ylabel("Frequency (Hz)")
     plt.tight_layout()
-    plt.savefig("C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/mel.png")
-    plt.show()
+    out_path = os.path.join(plot_path, "mel.png")
+    plt.savefig(out_path)
+    # plt.show()
     
 
 # 🔹 STFT 스펙트로그램 시각화
@@ -80,19 +92,19 @@ if stft_spectrogram:
     D = librosa.stft(data, n_fft=1024, hop_length=512)
     D_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
 
-    # 시간 및 주파수 축 계산
-    freqs = librosa.fft_frequencies(sr=samplerate, n_fft=1024)   # 주파수 벡터 (shape: 513,)
-    times = librosa.frames_to_time(np.arange(D_db.shape[1]), sr=samplerate, hop_length=512)  # 시간 벡터
+    # # 시간 및 주파수 축 계산
+    # freqs = librosa.fft_frequencies(sr=samplerate, n_fft=1024)   # 주파수 벡터 (shape: 513,)
+    # times = librosa.frames_to_time(np.arange(D_db.shape[1]), sr=samplerate, hop_length=512)  # 시간 벡터
 
-    # DataFrame으로 변환 (행: 주파수, 열: 시간)
-    df_stft = pd.DataFrame(D_db, index=freqs, columns=times)
-    df_stft.index.name = "Frequency (Hz)"
-    df_stft.columns.name = "Time (s)"
+    # # DataFrame으로 변환 (행: 주파수, 열: 시간)
+    # df_stft = pd.DataFrame(D_db, index=freqs, columns=times)
+    # df_stft.index.name = "Frequency (Hz)"
+    # df_stft.columns.name = "Time (s)"
 
-    # CSV 저장 경로
-    stft_csv_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/stft_spectrogram.csv"
-    df_stft.to_csv(stft_csv_path)
-    print(f"✅ STFT dB 데이터가 CSV로 저장되었습니다: {stft_csv_path}")
+    # # CSV 저장 경로
+    # stft_csv_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/stft_spectrogram.csv"
+    # df_stft.to_csv(stft_csv_path)
+    # print(f"✅ STFT dB 데이터가 CSV로 저장되었습니다: {stft_csv_path}")
 
     plt.figure(figsize=(12, 5))
     librosa.display.specshow(D_db, sr=samplerate, hop_length=512,
@@ -102,14 +114,45 @@ if stft_spectrogram:
     plt.xlabel("Time (s)")
     plt.ylabel("Frequency (Hz)")
     plt.tight_layout()
-    plt.savefig("C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/stft.png") 
-    plt.show()
+    out_path = os.path.join(plot_path, "stft.png")
+    plt.savefig(out_path)
+    # plt.show()
     
+if fft_img:
+    fft_data = abs(fft(data))
+    # Nyquist 주파수까지만 사용
+    half_len = len(fft_data) // 2
+    fft_data = fft_data[:half_len]
+    hz_per_bin = samplerate / len(fft_data) / 2  # bin당 주파수 간격
+    freqs = np.arange(half_len) * samplerate / len(fft_data) / 2
+    # 최대 진폭 주파수
+    max_index = np.argmax(fft_data)
+    max_freq = freqs[max_index]
+
+    print(f"전체 구간 max FFT 값: {fft_data[max_index]:.2f}")
+    print(f"해당 주파수(Hz): {max_freq:.2f} Hz")
+
+    # ✅ FFT 그래프 시각화 및 저장
+    plt.figure(figsize=(12, 5))
+    freqs = np.arange(len(fft_data)) * hz_per_bin
+    plt.plot(freqs, fft_data, label='FFT Spectrum')
+    # plt.axvline(max_freq, color='r', linestyle='--', label=f'Max: {max_freq:.1f}Hz')
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel("Amplitude")
+    plt.title("FFT Spectrum")
+    plt.legend()
+    # plt.grid(True)
+
+    out_path = os.path.join(plot_path, "fft.png")
+    plt.savefig(out_path)
+    plt.close()
+    print(f"✅ FFT 그래프 저장 완료: {out_path}")
+
 
 if stft_wav:
     save_wav_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/cleaned_filtered_output.wav"
-    low_threshold_hz = 0  # 이 이상의 주파수를 노이즈로 간주
-    high_threshold_hz = 2000
+    low_threshold_hz = 1600  # 이 이상의 주파수를 노이즈로 간주
+    high_threshold_hz = 1700
     # 2. STFT 변환
     D = librosa.stft(data, n_fft=1024, hop_length=512)
     D_mag = np.abs(D)
@@ -121,7 +164,7 @@ if stft_wav:
 
     # 4. 노이즈 제거: 주파수 성분을 0으로 마스킹
     D_mag_cleaned = D_mag.copy()
-    D_mag_cleaned[freq_mask, :] = 0
+    D_mag_cleaned[~freq_mask, :] = 0
 
     # 5. 복소수로 다시 합성 (magnitude + phase)
     D_cleaned_complex = D_mag_cleaned * np.exp(1j * D_phase)
@@ -141,7 +184,7 @@ if stft_wav:
     plt.title("STFT (After Noise Filtering > 3kHz)")
     plt.tight_layout()
     plt.savefig("C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/stft_after.png")
-    plt.show()
+    # plt.show()
 
 
 
