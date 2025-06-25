@@ -8,8 +8,8 @@ import soundfile as sf
 import os
 
 made_csv = 0
-melspectrogram = 1
-stft_spectrogram = 1
+melspectrogram = 0
+stft_spectrogram = 0
 fft_img = 1
 stft_wav = 0
 
@@ -27,7 +27,7 @@ def get_wav_clean1sec(signal,sr):
     return tfa_data, sr
 
 # ✅ 처리할 디렉토리 지정
-input_folder = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/convtasnet_test_clean/190228_20250611_10_27_09_126_N"
+input_folder = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/device_noise"
 wav_files = [f for f in os.listdir(input_folder) if f.endswith(".wav")]
 
 for wav_file in wav_files:
@@ -40,7 +40,7 @@ for wav_file in wav_files:
     base_output_dir = os.path.dirname(wav_path)
     plot_path = os.path.join(base_output_dir, wav_filename)
     os.makedirs(plot_path, exist_ok=True)
-
+    data_1sec, sr = get_wav_clean1sec(data,samplerate)
     #----------------------------------------------------------------------------------------------------------
     if made_csv:
         fft_data = abs(fft(data))
@@ -52,7 +52,7 @@ for wav_file in wav_files:
         print(f"전체 구간 max FFT 값: {fft_data[max_index]:.2f}")
         print(f"해당 주파수(Hz): {max_freq:.2f} Hz")
         #----------------------------------------------------------------------------------------------
-        data_1sec, sr = get_wav_clean1sec(data,samplerate)
+        
         fft_data_1sec = abs(fft(data_1sec))
 
         max_index_1sec = np.argmax(fft_data_1sec)
@@ -107,7 +107,7 @@ for wav_file in wav_files:
         # plt.show()
         
     if fft_img:
-        fft_data = abs(fft(data))
+        fft_data = abs(fft(data_1sec))
         # Nyquist 주파수까지만 사용
         half_len = len(fft_data) // 2
         fft_data = fft_data[:half_len]

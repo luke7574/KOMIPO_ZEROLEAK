@@ -10,7 +10,7 @@ import librosa.display
 import matplotlib.pyplot as plt
 from scipy.fftpack import fft
 
-one = 0    # wav파일명으로 폴더 생성후 하위폴더로 FFT/MEL/STFT 폴더 생성
+one = 1    # wav파일명으로 폴더 생성후 하위폴더로 FFT/MEL/STFT 폴더 생성
 two = 1    # ConvTasNet모델 활용하여 복원2개 생성
 three = 1  # FFT / MEL / STFT  그래프 생성하여 알맞는 폴더로 이동
 
@@ -106,7 +106,7 @@ if two:
 #--------------------------------------------------------------------------------------------------------
 if three:
     # ✅ 3단계: 모든 wav에 대해 FFT/MEL/STFT 생성
-    def generate_spectrograms(data, sr, save_prefix, folder_path):
+    def generate_spectrograms(data, sr, save_prefix, folder_path, fft_ymax=None):
         # FFT
         fft_data = abs(fft(data))
         half = len(fft_data) // 2
@@ -117,6 +117,8 @@ if three:
         plt.title("FFT Spectrum")
         plt.xlabel("Frequency (Hz)")
         plt.ylabel("Amplitude")
+        if fft_ymax:  # y축 최대값 고정
+            plt.ylim(0, fft_ymax)
         plt.tight_layout()
         plt.savefig(os.path.join(folder_path, "FFT", f"{save_prefix}_FFT.png"))
         plt.close()
@@ -149,6 +151,8 @@ if three:
         if not os.path.isdir(folder_path):
             continue
 
+        fft_max_val = None  # FFT 스케일 최대값 저장 변수
+
         for file in os.listdir(folder_path):
             if file.endswith(".wav"):
                 wav_path = os.path.join(folder_path, file)
@@ -157,7 +161,13 @@ if three:
                     data, samplerate = librosa.load(wav_path, sr=None, duration=5)
                     data, samplerate = get_wav_clean1sec(data, samplerate)
                     base = os.path.splitext(file)[0]
-                    generate_spectrograms(data, samplerate, base, folder_path)
+
+                    # ✅ 첫 번째 파일을 원본으로 간주하고 FFT 기준값 저장
+                    if fft_max_val is None:
+                        fft_vals = abs(fft(data))
+                        fft_max_val = np.max(fft_vals[:len(fft_vals)//2])  # 절반까지만 FFT 사용
+
+                    generate_spectrograms(data, samplerate, base, folder_path, fft_ymax=fft_max_val)
                     print(f"✅ 그래프 생성 완료: {file}")
                 except Exception as e:
                     print(f"❌ 오류 발생: {file} → {e}")

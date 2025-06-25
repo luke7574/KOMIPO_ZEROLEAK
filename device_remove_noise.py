@@ -1,35 +1,47 @@
-import torchaudio
-from demucs.apply import apply_model
-from demucs.pretrained import get_model
+import numpy as np
+import librosa
+import soundfile as sf
 import os
+import noisereduce as nr
 
-# 모델 불러오기
-model = get_model(name="htdemucs")  # 또는 htdemucs_ft / demucs48_hq 등
 
-# 파일 로드 및 리샘플링
-input_wav_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/demucs_test/전기/153606_20231010_09_11_01_127_N.wav"
-waveform, sr = torchaudio.load(input_wav_path)
 
-# (채널, 시간) → (1, 채널, 시간): 배치 차원 추가
-waveform = waveform.unsqueeze(0)
-# 리샘플링
-if sr != 44100:
-    resampler = torchaudio.transforms.Resample(sr, 44100)
-    waveform = resampler(waveform.squeeze(0)).unsqueeze(0)
+leak_wav = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/device_noise/강아지.wav"
+noise_wav = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/device_noise/device_noise.wav"
+leak_cleaned_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/device_noise"
 
-# ✅ 1채널 → 2채널 (Demucs는 스테레오 기대)
-if waveform.shape[1] == 1:
-    waveform = waveform.repeat(1, 2, 1)    
 
-# 분리 실행
-sources = apply_model(model, waveform, device='cpu')  # shape: [num_sources, channels, time]
+# WAV 파일 로드
+leak_data, sr = librosa.load(leak_wav, sr=None)
+noise_data, _ = librosa.load(noise_wav, sr=sr)
+# 길이 맞추기 (padding)
+max_len = max(len(leak_data), len(noise_data))
+leak_data = np.pad(leak_data, (0, max_len - len(leak_data)))
+noise_data = np.pad(noise_data, (0, max_len - len(noise_data)))
 
-# 저장 (batch 차원 제거 후 저장)
-output_dir = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/demucs_test/전기"
+#----------------------------------------------------------------------------------------------
+# # STFT
+# leak_stft = librosa.stft(leak_data, n_fft=2048, hop_length=512)
+# noise_stft = librosa.stft(noise_data, n_fft=2048, hop_length=512)
 
-source_names = ["drums", "bass", "other", "vocals"]
-for i, name in enumerate(source_names):
-    audio = sources[0, i]  # shape: (2, samples)
-    out_path = os.path.join(output_dir, f"{name}.wav")
-    torchaudio.save(out_path, audio, 44100)
-    print(f"✅ 저장 완료: {out_path}")
+# # 복소수 STFT 전체 차감
+# clean_stft = leak_stft - noise_stft
+
+# # iSTFT
+# clean_data = librosa.istft(clean_stft, hop_length=512)
+
+# # RMS 정규화
+# rms = np.sqrt(np.mean(clean_data**2))
+# clean_data = clean_data / (rms + 1e-6) * 0.05
+
+# # Save
+# output_path = os.path.join(leak_cleaned_path, "leak_cleaned.wav")
+# sf.write(output_path, clean_data, sr)
+# print(f"✅ 복소수 차감 방식 저장 완료: {output_path}")
+
+
+#----------------------------------------------------------------------------------------------
+cleaned = nr.reduce_noise(y=leak_data, y_noise=noise_data, sr=sr)
+output_path = os.path.join(leak_cleaned_path, "cleaned_강아지지.wav")
+sf.write(output_path, cleaned, sr)
+print(f"✅ 복소수 차감 방식 저장 완료: {output_path}")
