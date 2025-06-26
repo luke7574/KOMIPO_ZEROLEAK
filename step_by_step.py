@@ -10,7 +10,7 @@ N_FFT = 2048
 HOP_LENGTH = 512
 BIN_RESOLUTION = SR / N_FFT  # ≈ 3.90625 Hz
 
-INPUT_FOLDER = "C:/Users/user/AI/KOMIPO_ZeroLeak/test"
+INPUT_FOLDER = "C:/Users/user/AI/KOMIPO_ZeroLeak/step_test"
 CLEAN_SEGMENT_FOLDER = "C:/Users/user/AI/KOMIPO_ZeroLeak/잡음_제거전"
 OUTPUT_FOLDER = "C:/Users/user/AI/KOMIPO_ZeroLeak/잡음_제거후"
 
@@ -80,18 +80,26 @@ def remove_noise_and_save(filepath, peaks):
     y_sec, _ = get_wav_clean1sec(y,SR)
     D = librosa.stft(y_sec, n_fft=N_FFT, hop_length=HOP_LENGTH)
     mag, phase = np.abs(D), np.angle(D)
-
-    # # 노이즈 bin 제거: 평균 값으로 대체
+###################################################################
+    # # 🔧 노이즈 bin ±5 대역 제거
     # for bin_idx in peaks:
-    #     # mag[bin_idx, :] = np.median(mag[bin_idx, :])  # 또는 mag[bin_idx, :] = 0 도 가능
-    #     mag[bin_idx, :] = 0
-
-    # 🔧 노이즈 bin ±5 대역 제거
+    #     for offset in range(-5, 6):  # -5 ~ +5
+    #         target_idx = bin_idx + offset
+    #         if 0 <= target_idx < mag.shape[0]:
+    #             mag[target_idx, :] = 0
+###################################################################
+    # ✅ 중심 주파수 bin만 보존 (±5 범위)
+    preserve_bins = set()
     for bin_idx in peaks:
-        for offset in range(-5, 6):  # -5 ~ +5
+        for offset in range(-5, 6):
             target_idx = bin_idx + offset
             if 0 <= target_idx < mag.shape[0]:
-                mag[target_idx, :] = 0
+                preserve_bins.add(target_idx)
+    # ✅ 나머지 bin 제거
+    for i in range(mag.shape[0]):
+        if i not in preserve_bins:
+            mag[i, :] = 0
+###################################################################
 
     # 복원
     D_cleaned = mag * np.exp(1j * phase)

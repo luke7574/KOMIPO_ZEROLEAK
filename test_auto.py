@@ -153,6 +153,20 @@ if three:
 
         fft_max_val = None  # FFT 스케일 최대값 저장 변수
 
+        # 1차 순회: 기준값(원본) 찾기
+        for file in os.listdir(folder_path):
+            if file.endswith(".wav") and "_part" not in file:
+                wav_path = os.path.join(folder_path, file)
+                try:
+                    data, samplerate = librosa.load(wav_path, sr=None, duration=5)
+                    data, samplerate = get_wav_clean1sec(data, samplerate)
+                    fft_vals = abs(fft(data))
+                    fft_max_val = np.max(fft_vals[:len(fft_vals)//2])
+                    print(f"🎯 기준 FFT y축 스케일 설정 완료 → {fft_max_val:.2f} ({file})")
+                    break  # 첫 번째 원본만 사용
+                except Exception as e:
+                    print(f"❌ 기준값 추출 오류: {file} → {e}")
+
         for file in os.listdir(folder_path):
             if file.endswith(".wav"):
                 wav_path = os.path.join(folder_path, file)

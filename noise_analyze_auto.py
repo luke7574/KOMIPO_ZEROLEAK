@@ -27,7 +27,7 @@ def get_wav_clean1sec(signal,sr):
     return tfa_data, sr
 
 # ✅ 처리할 디렉토리 지정
-input_folder = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/device_noise"
+input_folder = "C:/Users/user/AI/KOMIPO_ZeroLeak/잡음_제거후"
 wav_files = [f for f in os.listdir(input_folder) if f.endswith(".wav")]
 
 for wav_file in wav_files:
@@ -40,7 +40,7 @@ for wav_file in wav_files:
     base_output_dir = os.path.dirname(wav_path)
     plot_path = os.path.join(base_output_dir, wav_filename)
     os.makedirs(plot_path, exist_ok=True)
-    data_1sec, sr = get_wav_clean1sec(data,samplerate)
+    # data_1sec, sr = get_wav_clean1sec(data,samplerate)
     #----------------------------------------------------------------------------------------------------------
     if made_csv:
         fft_data = abs(fft(data))
@@ -107,7 +107,7 @@ for wav_file in wav_files:
         # plt.show()
         
     if fft_img:
-        fft_data = abs(fft(data_1sec))
+        fft_data = abs(fft(data))
         # Nyquist 주파수까지만 사용
         half_len = len(fft_data) // 2
         fft_data = fft_data[:half_len]
