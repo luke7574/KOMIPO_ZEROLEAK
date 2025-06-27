@@ -16,6 +16,7 @@ three = 1  # FFT / MEL / STFT  그래프 생성하여 알맞는 폴더로 이동
 
 # ✅ 상위 폴더 경로 설정
 base_input_dir = "C:/Users/user/중부발전/M2_Leak/0613_0619/FH103"
+base_input_dir_mac = "/Users/wook/WIPLAT/중부발전/M2_Leak/0613_0619/V110"
 
 def get_wav_clean1sec(signal,sr):
     SEC_0_1 = sr // 10  # 0.1초 샘플 개수
@@ -32,15 +33,15 @@ def get_wav_clean1sec(signal,sr):
 #---------------------------------------------------------------------------------------------------------
 if one:
     # ✅ 폴더 내 모든 파일 반복
-    for filename in os.listdir(base_input_dir):
+    for filename in os.listdir(base_input_dir_mac):
         if filename.endswith(".wav"):
-            wav_path = os.path.join(base_input_dir, filename)
+            wav_path = os.path.join(base_input_dir_mac, filename)
             name_only = os.path.splitext(filename)[0]
             # ✅ 파일 이름에서 .wav 제거하고 _undefined 제거
             name_only = os.path.splitext(filename)[0].replace('_undefined', '')
             
             # ✅ 동일 이름의 하위 폴더 생성
-            target_folder = os.path.join(base_input_dir, name_only)
+            target_folder = os.path.join(base_input_dir_mac, name_only)
             os.makedirs(target_folder, exist_ok=True)
             
             new_filename = filename.replace('_undefined', '')
@@ -64,8 +65,8 @@ if two:
     model = ConvTasNet.from_pretrained("JorisCos/ConvTasNet_Libri2Mix_sepclean_16k")
     
     # ✅ 하위 폴더 순회
-    for subfolder_name in os.listdir(base_input_dir):
-        subfolder_path = os.path.join(base_input_dir, subfolder_name)
+    for subfolder_name in os.listdir(base_input_dir_mac):
+        subfolder_path = os.path.join(base_input_dir_mac, subfolder_name)
 
         if not os.path.isdir(subfolder_path):
             continue
@@ -146,8 +147,8 @@ if three:
         plt.close()
 
     # ✅ 스펙트로그램 생성 적용 (librosa.load로 5초까지 로드)
-    for folder in os.listdir(base_input_dir):
-        folder_path = os.path.join(base_input_dir, folder)
+    for folder in os.listdir(base_input_dir_mac):
+        folder_path = os.path.join(base_input_dir_mac, folder)
         if not os.path.isdir(folder_path):
             continue
 
