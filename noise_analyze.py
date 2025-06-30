@@ -30,7 +30,8 @@ def get_wav_clean1sec(signal,sr):
     tfa_data = signal[a * SEC_0_1: a * SEC_0_1 + SEC_1]
     return tfa_data, sr
 
-wav_path = "C:/Users/user/중부발전/M2_Leak/0613_0619/FH103/3026_20250619_053000/3026_20250619_053000.wav"
+# wav_path = "C:/Users/user/중부발전/M2_Leak/0613_0619/FH103/3026_20250619_053000/3026_20250619_053000.wav"
+wav_path = "/Users/wook/WIPLAT/중부발전/M2_Leak/0613_0619/V110/2940_20250613_033000/2940_20250613_033000.wav"  # MacBook
 data, samplerate = librosa.load(wav_path, sr=None, duration=5)
 
 # wav_filename = os.path.splitext(os.path.basename(wav_path))[0]
@@ -65,8 +66,9 @@ if made_csv:
         'fft' : fft_data
     })
     save_folder = "C:/Users/user/AI/KOMIPO_ZeroLeak/electric_sound/fft_data_abs.csv"
-    df.to_csv(save_folder, index=False)
-    print(f"결과가 CSV로 저장되었습니다: {save_folder}")
+    save_folder_mac = "/Users/wook/WIPLAT/중부발전/M2_Leak/0613_0619/V110/2940_20250613_033000/fft_data_abs.csv"
+    df.to_csv(save_folder_mac, index=False)
+    print(f"결과가 CSV로 저장되었습니다: {save_folder_mac}")
 
 #----------------------------------------------------------------------------------------------------------
 if melspectrogram:
@@ -192,10 +194,18 @@ def save_mel_plot(signal, samplerate, title, save_path):
 
 
 if stft_wav:
-    low_threshold_hz = 350  # 이 이상의 주파수를 노이즈로 간주
-    high_threshold_hz = 400
-    save_wav_path = f"C:/Users/user/중부발전/M2_Leak/0613_0619/FH103/3026_20250619_053000/테스트/output_{low_threshold_hz}_{high_threshold_hz}.wav"
-    save_wav_path_re = f"C:/Users/user/중부발전/M2_Leak/0613_0619/FH103/3026_20250619_053000/테스트/remove_{low_threshold_hz}_{high_threshold_hz}.wav"
+    #----------------------------------------------------------------------------------------------------------
+    low_threshold_hz = 155  # 이 이상의 주파수를 노이즈로 간주
+    high_threshold_hz = 365
+    #----------------------------------------------------------------------------------------------------------
+    # 여러 주파수 대역을 노이즈로 간주
+    noise_ranges = [(115, 125), (235, 245), (295, 310), (355, 365)]
+    #----------------------------------------------------------------------------------------------------------
+
+    # save_wav_path = f"C:/Users/user/중부발전/M2_Leak/0613_0619/FH103/3026_20250619_053000/테스트/output_{low_threshold_hz}_{high_threshold_hz}.wav"
+    # save_wav_path_re = f"C:/Users/user/중부발전/M2_Leak/0613_0619/FH103/3026_20250619_053000/테스트/remove_{low_threshold_hz}_{high_threshold_hz}.wav"
+    save_wav_path = f"/Users/wook/WIPLAT/중부발전/M2_Leak/0613_0619/V110/2940_20250613_033000/테스트/output_{low_threshold_hz}_{high_threshold_hz}.wav"        # MacBook
+    save_wav_path_re = f"/Users/wook/WIPLAT/중부발전/M2_Leak/0613_0619/V110/2940_20250613_033000/테스트/remove_{low_threshold_hz}_{high_threshold_hz}.wav"     # MacBook
     # 2. STFT 변환
     D = librosa.stft(data, n_fft=1024, hop_length=512)
     D_mag = np.abs(D)
@@ -203,8 +213,15 @@ if stft_wav:
 
     # 3. 주파수 벡터 생성
     freqs = librosa.fft_frequencies(sr=samplerate, n_fft=1024)  # 길이: 513
-    freq_mask = (freqs > low_threshold_hz) & (freqs < high_threshold_hz)              # 노이즈 범위 마스크 (True인 부분 제거)
+    #----------------------------------------------------------------------------------------------------------
+    # freq_mask = (freqs > low_threshold_hz) & (freqs < high_threshold_hz)              # 노이즈 범위 마스크 (True인 부분 제거)
+    #----------------------------------------------------------------------------------------------------------
+    # 여러 구간에 해당하는 마스크 생성
+    freq_mask = np.full(freqs.shape, False)
+    for low, high in noise_ranges:
+        freq_mask |= (freqs > low) & (freqs < high)
 
+    #----------------------------------------------------------------------------------------------------------
     # 4. 노이즈 제거: 주파수 성분을 0으로 마스킹
     # 선택한 구간만 추출
     D_mag_cleaned = D_mag.copy()
@@ -227,7 +244,8 @@ if stft_wav:
 
     # FFT 시각화
     # ✅ 파일 경로 지정 (이미 있는 주파수 범위 활용)
-    path = f"C:/Users/user/중부발전/M2_Leak/0613_0619/FH103/3026_20250619_053000/테스트"
+    # path = f"C:/Users/user/중부발전/M2_Leak/0613_0619/FH103/3026_20250619_053000/테스트"
+    path = f"/Users/wook/WIPLAT/중부발전/M2_Leak/0613_0619/V110/2940_20250613_033000/테스트"   # MacBook
     y_cleaned_1esc, samplerate = get_wav_clean1sec(y_cleaned, samplerate)
     y_cleaned_re_1esc, samplerate = get_wav_clean1sec(y_cleaned_re, samplerate)
     
@@ -307,18 +325,18 @@ def adjust_spectral_peaks_with_window(y, sr, window_size=50, threshold_ratio=3, 
     return adjusted_y, sr
 
 if remove_electronic:
-    # data, samplerate = get_wav_clean1sec(data, samplerate)
+    data, samplerate = get_wav_clean1sec(data, samplerate)
     adjusted_data, samplerate = adjust_spectral_peaks_with_window(data, samplerate)
 
     # ✅ 파일 경로 지정 (이미 있는 주파수 범위 활용)
-    path = f"C:/Users/user/중부발전/M2_Leak/0613_0619/FH103/3026_20250619_053000/테스트/remove_elec"
-
+    # path = f"C:/Users/user/중부발전/M2_Leak/0613_0619/FH103/3026_20250619_053000/테스트/remove_elec"
+    path = f"/Users/wook/WIPLAT/중부발전/M2_Leak/0613_0619/V110/2940_20250613_033000/테스트/remove_elec"       # Macbook
     # 음원 복원하기
-    output_wav_path = os.path.join(path, "11adjusted_output.wav")
+    output_wav_path = os.path.join(path, "adjusted_output.wav")
     sf.write(output_wav_path, adjusted_data.astype(np.float32), samplerate)
     print(f"✅ 복원된 음원 저장 완료: {output_wav_path}")
 
     # FFT 시각화
-    fft_img_path = os.path.join(path, f"11FFT_elec_remove.png")
+    fft_img_path = os.path.join(path, f"FFT_elec_remove.png")
     save_fft_plot(adjusted_data, samplerate, "FFT Spectrum After Spectral Peak Adjustment", fft_img_path)
 
