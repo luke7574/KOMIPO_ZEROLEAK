@@ -71,85 +71,85 @@ if made_csv:
     print(f"결과가 CSV로 저장되었습니다: {save_folder_mac}")
 
 #----------------------------------------------------------------------------------------------------------
-if melspectrogram:
-    # 2. Mel 스펙트로그램 계산
-    S = librosa.feature.melspectrogram(y=data, sr=samplerate, n_fft=2048, hop_length=512, n_mels=128)
-    S_db = librosa.power_to_db(S, ref=np.max)  # dB scale로 변환
-    # 3. 시각화
-    plt.figure(figsize=(12, 5))
-    librosa.display.specshow(S_db, sr=samplerate, hop_length=512,
-                            x_axis='time', y_axis='hz', cmap='magma')
+# if melspectrogram:
+#     # 2. Mel 스펙트로그램 계산
+#     S = librosa.feature.melspectrogram(y=data, sr=samplerate, n_fft=2048, hop_length=512, n_mels=128)
+#     S_db = librosa.power_to_db(S, ref=np.max)  # dB scale로 변환
+#     # 3. 시각화
+#     plt.figure(figsize=(12, 5))
+#     librosa.display.specshow(S_db, sr=samplerate, hop_length=512,
+#                             x_axis='time', y_axis='hz', cmap='magma')
 
-    plt.colorbar(format="%+2.0f dB")
-    plt.title("Mel Spectrogram (Time vs Frequency)")
-    plt.xlabel("Time (s)")
-    plt.ylabel("Frequency (Hz)")
-    plt.tight_layout()
-    out_path = os.path.join(plot_path, "mel.png")
-    plt.savefig(out_path)
-    # plt.show()
+#     plt.colorbar(format="%+2.0f dB")
+#     plt.title("Mel Spectrogram (Time vs Frequency)")
+#     plt.xlabel("Time (s)")
+#     plt.ylabel("Frequency (Hz)")
+#     plt.tight_layout()
+#     out_path = os.path.join(plot_path, "mel.png")
+#     plt.savefig(out_path)
+#     # plt.show()
     
 
-# 🔹 STFT 스펙트로그램 시각화
-if stft_spectrogram:
-    D = librosa.stft(data, n_fft=1024, hop_length=512)
-    D_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
+# # 🔹 STFT 스펙트로그램 시각화
+# if stft_spectrogram:
+#     D = librosa.stft(data, n_fft=1024, hop_length=512)
+#     D_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
 
-    # # 시간 및 주파수 축 계산
-    # freqs = librosa.fft_frequencies(sr=samplerate, n_fft=1024)   # 주파수 벡터 (shape: 513,)
-    # times = librosa.frames_to_time(np.arange(D_db.shape[1]), sr=samplerate, hop_length=512)  # 시간 벡터
+#     # # 시간 및 주파수 축 계산
+#     # freqs = librosa.fft_frequencies(sr=samplerate, n_fft=1024)   # 주파수 벡터 (shape: 513,)
+#     # times = librosa.frames_to_time(np.arange(D_db.shape[1]), sr=samplerate, hop_length=512)  # 시간 벡터
 
-    # # DataFrame으로 변환 (행: 주파수, 열: 시간)
-    # df_stft = pd.DataFrame(D_db, index=freqs, columns=times)
-    # df_stft.index.name = "Frequency (Hz)"
-    # df_stft.columns.name = "Time (s)"
+#     # # DataFrame으로 변환 (행: 주파수, 열: 시간)
+#     # df_stft = pd.DataFrame(D_db, index=freqs, columns=times)
+#     # df_stft.index.name = "Frequency (Hz)"
+#     # df_stft.columns.name = "Time (s)"
 
-    # # CSV 저장 경로
-    # stft_csv_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/stft_spectrogram.csv"
-    # df_stft.to_csv(stft_csv_path)
-    # print(f"✅ STFT dB 데이터가 CSV로 저장되었습니다: {stft_csv_path}")
+#     # # CSV 저장 경로
+#     # stft_csv_path = "C:/Users/user/AI/KOMIPO_ZeroLeak/test/가나다/stft_spectrogram.csv"
+#     # df_stft.to_csv(stft_csv_path)
+#     # print(f"✅ STFT dB 데이터가 CSV로 저장되었습니다: {stft_csv_path}")
 
-    plt.figure(figsize=(12, 5))
-    librosa.display.specshow(D_db, sr=samplerate, hop_length=512,
-                              x_axis='time', y_axis='hz', cmap='magma')
-    plt.colorbar(format='%+2.0f dB')
-    plt.title('STFT Spectrogram (Time vs Frequency)')
-    plt.xlabel("Time (s)")
-    plt.ylabel("Frequency (Hz)")
-    plt.tight_layout()
-    out_path = os.path.join(plot_path, "stft.png")
-    plt.savefig(out_path)
-    # plt.show()
+#     plt.figure(figsize=(12, 5))
+#     librosa.display.specshow(D_db, sr=samplerate, hop_length=512,
+#                               x_axis='time', y_axis='hz', cmap='magma')
+#     plt.colorbar(format='%+2.0f dB')
+#     plt.title('STFT Spectrogram (Time vs Frequency)')
+#     plt.xlabel("Time (s)")
+#     plt.ylabel("Frequency (Hz)")
+#     plt.tight_layout()
+#     out_path = os.path.join(plot_path, "stft.png")
+#     plt.savefig(out_path)
+#     # plt.show()
     
-if fft_img:
-    fft_data = abs(fft(data))
-    # Nyquist 주파수까지만 사용
-    half_len = len(fft_data) // 2
-    fft_data = fft_data[:half_len]
-    hz_per_bin = samplerate / len(fft_data) / 2  # bin당 주파수 간격
-    freqs = np.arange(half_len) * samplerate / len(fft_data) / 2
-    # 최대 진폭 주파수
-    max_index = np.argmax(fft_data)
-    max_freq = freqs[max_index]
+# if fft_img:
+#     fft_data = abs(fft(data))
+#     # Nyquist 주파수까지만 사용
+#     half_len = len(fft_data) // 2
+#     fft_data = fft_data[:half_len]
+#     hz_per_bin = samplerate / len(fft_data) / 2  # bin당 주파수 간격
+#     freqs = np.arange(half_len) * samplerate / len(fft_data) / 2
+#     # 최대 진폭 주파수
+#     max_index = np.argmax(fft_data)
+#     max_freq = freqs[max_index]
 
-    print(f"전체 구간 max FFT 값: {fft_data[max_index]:.2f}")
-    print(f"해당 주파수(Hz): {max_freq:.2f} Hz")
+#     print(f"전체 구간 max FFT 값: {fft_data[max_index]:.2f}")
+#     print(f"해당 주파수(Hz): {max_freq:.2f} Hz")
 
-    # ✅ FFT 그래프 시각화 및 저장
-    plt.figure(figsize=(12, 5))
-    freqs = np.arange(len(fft_data)) * hz_per_bin
-    plt.plot(freqs, fft_data, label='FFT Spectrum')
-    # plt.axvline(max_freq, color='r', linestyle='--', label=f'Max: {max_freq:.1f}Hz')
-    plt.xlabel("Frequency (Hz)")
-    plt.ylabel("Amplitude")
-    plt.title("FFT Spectrum")
-    plt.legend()
-    # plt.grid(True)
+#     # ✅ FFT 그래프 시각화 및 저장
+#     plt.figure(figsize=(12, 5))
+#     freqs = np.arange(len(fft_data)) * hz_per_bin
+#     plt.plot(freqs, fft_data, label='FFT Spectrum')
+#     # plt.axvline(max_freq, color='r', linestyle='--', label=f'Max: {max_freq:.1f}Hz')
+#     plt.xlabel("Frequency (Hz)")
+#     plt.ylabel("Amplitude")
+#     plt.title("FFT Spectrum")
+#     plt.legend()
+#     # plt.grid(True)
 
-    out_path = os.path.join(plot_path, "fft.png")
-    plt.savefig(out_path)
-    plt.close()
-    print(f"✅ FFT 그래프 저장 완료: {out_path}")
+#     out_path = os.path.join(plot_path, "fft.png")
+#     plt.savefig(out_path)
+#     plt.close()
+#     print(f"✅ FFT 그래프 저장 완료: {out_path}")
 
 # ✅ FFT 이미지 저장 함수
 def save_fft_plot(signal, samplerate, title, save_path):
