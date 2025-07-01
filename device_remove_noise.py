@@ -42,6 +42,6 @@ noise_data = np.pad(noise_data, (0, max_len - len(noise_data)))
 
 #----------------------------------------------------------------------------------------------
 cleaned = nr.reduce_noise(y=leak_data, y_noise=noise_data, sr=sr)
-output_path = os.path.join(leak_cleaned_path, "cleaned_강아지지.wav")
+output_path = os.path.join(leak_cleaned_path, "cleaned_강아지.wav")
 sf.write(output_path, cleaned, sr)
 print(f"✅ 복소수 차감 방식 저장 완료: {output_path}")

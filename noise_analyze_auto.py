@@ -27,7 +27,7 @@ def get_wav_clean1sec(signal,sr):
     return tfa_data, sr
 
 # ✅ 처리할 디렉토리 지정
-input_folder = "C:/Users/user/AI/KOMIPO_ZeroLeak/잡음_제거후"
+input_folder = "C:/Users/user/AI/KOMIPO_ZeroLeak/잡음_제거전"
 wav_files = [f for f in os.listdir(input_folder) if f.endswith(".wav")]
 
 for wav_file in wav_files:
