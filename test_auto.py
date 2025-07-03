@@ -16,7 +16,7 @@ three = 1  # FFT / MEL / STFT  그래프 생성하여 알맞는 폴더로 이동
 
 # ✅ 상위 폴더 경로 설정
 base_input_dir = "C:/Users/user/중부발전/M2_Leak/0613_0619/FH103"
-base_input_dir_mac = "/Users/wook/WIPLAT/중부발전/M2_Leak/0613_0619/V110"
+base_input_dir_mac = "/Users/wook/WIPLAT/중부발전/M2_Leak/0613_0619/FH102"
 
 def get_wav_clean1sec(signal,sr):
     SEC_0_1 = sr // 10  # 0.1초 샘플 개수
